@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rebuildwhy.dev/schemas/plan-report-v1.schema.json",
+  "$id": "urn:rebuildwhy:schema:plan-report:v1",
   "title": "RebuildWhy Plan Report V1",
   "type": "object",
   "additionalProperties": false,
@@ -16,23 +16,52 @@
   "properties": {
     "schema_version": {"const": 1},
     "plan_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-    "pipeline": {"type": "string"},
+    "pipeline": {"type": "string", "minLength": 1},
     "mode": {"enum": ["current", "counterfactual"]},
-    "affected_task_ids": {"type": "array", "items": {"type": "string"}},
+    "affected_task_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"}
+    },
     "tasks": {
       "type": "array",
       "items": {
         "type": "object",
         "required": ["task_id", "decision", "reason_ids"],
         "properties": {
-          "task_id": {"type": "string"},
+          "task_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
           "decision": {"enum": ["HIT", "RESTORE", "RUN", "MAY_RUN", "BLOCKED"]},
-          "baseline_action_key": {"type": "string"},
-          "proposed_action_key": {"type": "string"},
-          "proposed_manifest_digest": {"type": "string"},
-          "reason_ids": {"type": "array", "items": {"type": "string"}}
+          "baseline_action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "proposed_action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "proposed_manifest_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "reason_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^reason-[0-9]{4}$"}
+          }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {"decision": {"const": "HIT"}},
+              "required": ["decision"]
+            },
+            "then": {"properties": {"reason_ids": {"maxItems": 0}}}
+          },
+          {
+            "if": {
+              "properties": {
+                "decision": {"enum": ["RESTORE", "RUN", "MAY_RUN", "BLOCKED"]}
+              },
+              "required": ["decision"]
+            },
+            "then": {"properties": {"reason_ids": {"minItems": 1}}}
+          }
+        ]
       }
     },
     "reasons": {
@@ -41,15 +70,42 @@
         "type": "object",
         "required": ["reason_id", "task_id", "code", "subject", "caused_by"],
         "properties": {
-          "reason_id": {"type": "string"},
-          "task_id": {"type": "string"},
-          "code": {"type": "string"},
-          "subject": {"type": "string"},
-          "old_digest": {"type": "string"},
-          "new_digest": {"type": "string"},
+          "reason_id": {"type": "string", "pattern": "^reason-[0-9]{4}$"},
+          "task_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+          "code": {
+            "enum": [
+              "NEW_TASK",
+              "FILE_CONTENT_CHANGED",
+              "CONFIG_FIELD_CHANGED",
+              "COMMAND_CHANGED",
+              "ENVIRONMENT_CHANGED",
+              "OUTPUT_CONTRACT_CHANGED",
+              "UPSTREAM_ARTIFACT_CHANGED",
+              "UPSTREAM_ARTIFACT_MAY_CHANGE",
+              "ACTION_RECORD_MISSING",
+              "ACTION_RECORD_CORRUPT",
+              "OUTPUT_VIEW_MISSING",
+              "CACHE_MANIFEST_MISSING",
+              "CACHE_MANIFEST_CORRUPT",
+              "CACHE_OBJECT_MISSING",
+              "CACHE_OBJECT_CORRUPT",
+              "REQUIRED_OUTPUT_MISSING",
+              "NONDETERMINISTIC_OUTPUT",
+              "INVALID_SPEC",
+              "MISSING_SOURCE_INPUT",
+              "OUTPUT_PATH_CONFLICT"
+            ]
+          },
+          "subject": {"type": "string", "minLength": 1},
+          "old_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "new_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
           "old_value": {},
           "new_value": {},
-          "caused_by": {"type": "array", "items": {"type": "string"}}
+          "caused_by": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^reason-[0-9]{4}$"}
+          }
         },
         "additionalProperties": false
       }

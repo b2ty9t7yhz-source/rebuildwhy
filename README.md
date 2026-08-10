@@ -179,6 +179,7 @@ Use an opt-in two-run check for important deterministic tasks:
 - [Cache correctness](docs/cache-correctness.md)
 - [Counterfactual planning](docs/counterfactual-planning.md)
 - [Security and trust boundary](docs/security-and-trust-boundary.md)
+- [Versioned JSON schemas](schemas/README.md)
 - [Phase 0 research and scope decision](docs/phase-0-design.md)
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
@@ -195,7 +196,8 @@ Use an opt-in two-run check for important deterministic tasks:
 
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
 cache corruption and absence, restoration, output conflicts, command failure, required outputs,
-failpoint-driven publication boundaries, same-content downstream reuse, and determinism checks.
+failpoint-driven publication boundaries, same-content downstream reuse, determinism checks, and
+Draft 2020-12 schema validation against real pipeline and CLI report instances.
 GitHub Actions runs linting, formatting, strict typing, branch coverage, and the full test suite on
 Python 3.11, 3.12, and 3.13, then installs the built wheel in a clean packaging job.
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rebuildwhy"
-version = "0.1.0"
+version = "0.1.1"
 description = "Explainable cache invalidation for trusted local task pipelines"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -47,6 +47,7 @@ Changelog = "https://github.com/b2ty9t7yhz-source/rebuildwhy/blob/main/CHANGELOG
 [project.optional-dependencies]
 dev = [
   "build>=1.5,<2",
+  "jsonschema>=4.25,<5",
   "mypy>=2.3,<3",
   "pytest>=8.3,<9",
   "pytest-cov>=6,<7",

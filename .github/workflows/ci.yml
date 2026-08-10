@@ -44,6 +44,27 @@ jobs:
         run: python -m pip install 'build>=1.5,<2'
       - name: Build source and wheel distributions
         run: python -m build
+      - name: Inspect source distribution contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tarfile
+
+          archive = next(Path("dist").glob("*.tar.gz"))
+          required = {
+              "schemas/README.md",
+              "schemas/error-report-v1.schema.json",
+              "schemas/pipeline-v1.schema.json",
+              "schemas/plan-report-v1.schema.json",
+              "schemas/run-report-v1.schema.json",
+          }
+          with tarfile.open(archive) as bundle:
+              names = bundle.getnames()
+          missing = sorted(
+              path for path in required if not any(name.endswith(f"/{path}") for name in names)
+          )
+          assert not missing, f"source distribution is missing: {missing}"
+          PY
       - name: Install wheel
         run: python -m pip install dist/*.whl
       - name: Smoke test installed entry points

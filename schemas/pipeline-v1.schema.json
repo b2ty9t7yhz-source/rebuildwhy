@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rebuildwhy.dev/schemas/pipeline-v1.schema.json",
+  "$id": "urn:rebuildwhy:schema:pipeline:v1",
   "title": "RebuildWhy Pipeline V1",
   "type": "object",
   "additionalProperties": false,
@@ -19,7 +19,19 @@
     "relativePath": {
       "type": "string",
       "minLength": 1,
-      "not": {"pattern": "(^/|(^|/)\\.\\.(/|$)|\\\\)"}
+      "allOf": [
+        {"not": {"const": "."}},
+        {"not": {"pattern": "^/"}},
+        {"not": {"pattern": "(^|/)\\.\\.(/|$)"}},
+        {"not": {"pattern": "\\\\"}},
+        {"not": {"pattern": "^\\.rebuildwhy(/|$)"}}
+      ]
+    },
+    "workingDirectory": {
+      "anyOf": [
+        {"const": "."},
+        {"$ref": "#/$defs/relativePath"}
+      ]
     },
     "task": {
       "type": "object",
@@ -36,7 +48,7 @@
               "minItems": 1,
               "items": {"type": "string", "minLength": 1}
             },
-            "working_directory": {"$ref": "#/$defs/relativePath"}
+            "working_directory": {"$ref": "#/$defs/workingDirectory"}
           }
         },
         "inputs": {
@@ -50,6 +62,7 @@
             },
             "config": {
               "type": "array",
+              "uniqueItems": true,
               "items": {
                 "type": "object",
                 "additionalProperties": false,

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from rebuildwhy import __version__
 from rebuildwhy.cli import main
 
 REPOSITORY_ROOT = Path(__file__).parents[2]
@@ -131,5 +132,5 @@ def test_module_entrypoint_reports_version() -> None:
     )
 
     assert result.returncode == 0
-    assert result.stdout == "rebuildwhy 0.1.0\n"
+    assert result.stdout == f"rebuildwhy {__version__}\n"
     assert result.stderr == ""
