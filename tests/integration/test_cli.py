@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -118,10 +119,14 @@ def test_human_error_is_concise(tmp_path: Path, capsys: pytest.CaptureFixture[st
 
 
 def test_module_entrypoint_reports_version() -> None:
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
     result = subprocess.run(
         [sys.executable, "-m", "rebuildwhy", "--version"],
         check=False,
         capture_output=True,
+        cwd=REPOSITORY_ROOT,
+        env=environment,
         text=True,
     )
 
