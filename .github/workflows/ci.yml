@@ -16,8 +16,8 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
@@ -27,4 +27,4 @@ jobs:
       - name: Format
         run: python -m ruff format --check src tests examples
       - name: Test
-        run: python -m pytest --cov=rebuildwhy --cov-report=term-missing --cov-fail-under=80
+        run: python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80

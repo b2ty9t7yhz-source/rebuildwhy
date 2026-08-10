@@ -143,7 +143,7 @@ Use an opt-in two-run check for important deterministic tasks:
 .venv/bin/python -m ruff check src tests examples
 .venv/bin/python -m ruff format --check src tests examples
 .venv/bin/python -m pytest
-.venv/bin/python -m pytest --cov=rebuildwhy --cov-report=term-missing --cov-fail-under=80
+.venv/bin/python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80
 ```
 
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
