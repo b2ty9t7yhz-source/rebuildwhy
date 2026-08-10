@@ -1,0 +1,14 @@
+ingest:
+  subject_label: synthetic-subject-001
+image:
+  spacing: [1.0, 1.0, 1.0]
+interpolation:
+  method: nearest
+normalization:
+  method: min-max
+features:
+  threshold: 0.5
+report:
+  title: Synthetic MRI Feature Summary
+notes:
+  owner: demonstration-only

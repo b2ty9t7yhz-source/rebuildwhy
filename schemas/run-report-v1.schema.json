@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rebuildwhy.dev/schemas/run-report-v1.schema.json",
+  "title": "RebuildWhy Run Report V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "pipeline", "events"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "pipeline": {"type": "string"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "decision", "action_key", "manifest_digest"],
+        "properties": {
+          "task_id": {"type": "string"},
+          "decision": {"enum": ["HIT", "RESTORE", "RUN"]},
+          "action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "manifest_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

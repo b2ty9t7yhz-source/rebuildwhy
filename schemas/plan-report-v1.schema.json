@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rebuildwhy.dev/schemas/plan-report-v1.schema.json",
+  "title": "RebuildWhy Plan Report V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "pipeline",
+    "mode",
+    "affected_task_ids",
+    "tasks",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "pipeline": {"type": "string"},
+    "mode": {"enum": ["current", "counterfactual"]},
+    "affected_task_ids": {"type": "array", "items": {"type": "string"}},
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task_id", "decision", "reason_ids"],
+        "properties": {
+          "task_id": {"type": "string"},
+          "decision": {"enum": ["HIT", "RESTORE", "RUN", "MAY_RUN", "BLOCKED"]},
+          "baseline_action_key": {"type": "string"},
+          "proposed_action_key": {"type": "string"},
+          "proposed_manifest_digest": {"type": "string"},
+          "reason_ids": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reason_id", "task_id", "code", "subject", "caused_by"],
+        "properties": {
+          "reason_id": {"type": "string"},
+          "task_id": {"type": "string"},
+          "code": {"type": "string"},
+          "subject": {"type": "string"},
+          "old_digest": {"type": "string"},
+          "new_digest": {"type": "string"},
+          "old_value": {},
+          "new_value": {},
+          "caused_by": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

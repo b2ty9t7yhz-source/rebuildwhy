@@ -1,0 +1,109 @@
+version: 1
+project: synthetic-mri-demo
+
+tasks:
+  ingest:
+    command:
+      argv: [python3, -m, example_tasks.ingest]
+      working_directory: .
+    inputs:
+      files:
+        - data/synthetic_image.json
+        - example_tasks/common.py
+        - example_tasks/ingest.py
+        - requirements.lock
+      config:
+        - file: config/pipeline.yaml
+          pointers:
+            - /ingest/subject_label
+    output:
+      publish: outputs/ingest
+      required:
+        - image.json
+        - metadata.json
+
+  resample:
+    command:
+      argv: [python3, -m, example_tasks.resample]
+      working_directory: .
+    inputs:
+      files:
+        - example_tasks/common.py
+        - example_tasks/resample.py
+        - requirements.lock
+      config:
+        - file: config/pipeline.yaml
+          pointers:
+            - /image/spacing
+            - /interpolation/method
+      artifacts:
+        - task: ingest
+          path: image.json
+    output:
+      publish: outputs/resample
+      required:
+        - image.json
+        - metadata.json
+
+  normalize:
+    command:
+      argv: [python3, -m, example_tasks.normalize]
+      working_directory: .
+    inputs:
+      files:
+        - example_tasks/common.py
+        - example_tasks/normalize.py
+        - requirements.lock
+      config:
+        - file: config/pipeline.yaml
+          pointers:
+            - /normalization/method
+      artifacts:
+        - task: resample
+          path: image.json
+    output:
+      publish: outputs/normalize
+      required:
+        - normalized.json
+
+  features:
+    command:
+      argv: [python3, -m, example_tasks.features]
+      working_directory: .
+    inputs:
+      files:
+        - example_tasks/common.py
+        - example_tasks/features.py
+        - requirements.lock
+      config:
+        - file: config/pipeline.yaml
+          pointers:
+            - /features/threshold
+      artifacts:
+        - task: normalize
+          path: normalized.json
+    output:
+      publish: outputs/features
+      required:
+        - features.json
+
+  report:
+    command:
+      argv: [python3, -m, example_tasks.report]
+      working_directory: .
+    inputs:
+      files:
+        - example_tasks/common.py
+        - example_tasks/report.py
+        - requirements.lock
+      config:
+        - file: config/pipeline.yaml
+          pointers:
+            - /report/title
+      artifacts:
+        - task: features
+          path: features.json
+    output:
+      publish: outputs/report
+      required:
+        - report.md
