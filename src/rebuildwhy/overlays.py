@@ -140,19 +140,19 @@ def _validate_declared_locators(pipeline: PipelineSpec, overlays: OverlaySet) ->
     declared_config_files = {
         dependency.file for task in pipeline.tasks.values() for dependency in task.configs
     }
-    for overlay in overlays.files:
-        if overlay.file not in declared_files:
+    for file_overlay in overlays.files:
+        if file_overlay.file not in declared_files:
             raise SpecError(
                 "UNDECLARED_FILE_OVERLAY",
                 "A file overlay must target a declared file or config input.",
-                file=overlay.file,
+                file=file_overlay.file,
             )
-    for overlay in overlays.configs:
-        if overlay.file not in declared_config_files:
+    for config_overlay in overlays.configs:
+        if config_overlay.file not in declared_config_files:
             raise SpecError(
                 "UNDECLARED_CONFIG_OVERLAY",
                 "A config overlay must target a declared configuration file.",
-                locator=f"{overlay.file}#{overlay.pointer}",
+                locator=f"{config_overlay.file}#{config_overlay.pointer}",
             )
 
 

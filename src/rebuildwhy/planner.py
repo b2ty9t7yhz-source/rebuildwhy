@@ -99,8 +99,9 @@ class Planner:
             else:
                 assert snapshot_result is not None
                 candidate = self.cache.inspect_action(snapshot_result.action_key)
-                if candidate.valid:
-                    manifest_digest = candidate.record["manifest_digest"]
+                candidate_record = candidate.record
+                if candidate_record is not None:
+                    manifest_digest = candidate_record["manifest_digest"]
                     if self.cache.output_view_valid(task, manifest_digest):
                         decision = Decision.HIT
                     else:
@@ -185,6 +186,7 @@ class Planner:
         subject: str,
         candidate: CacheInspection | None = None,
     ) -> ReasonDraft:
+        code: ReasonCode
         if candidate is not None and candidate.reason not in {
             None,
             ReasonCode.ACTION_RECORD_MISSING,
@@ -288,7 +290,9 @@ def _config_reasons(
     old_items: list[dict[str, Any]],
     new_items: list[dict[str, Any]],
 ) -> list[ReasonDraft]:
-    locator = lambda item: f"{item['file']}#{item['pointer']}"  # noqa: E731
+    def locator(item: dict[str, Any]) -> str:
+        return f"{item['file']}#{item['pointer']}"
+
     old_index = {locator(item): item for item in old_items}
     new_index = {locator(item): item for item in new_items}
     reasons: list[ReasonDraft] = []

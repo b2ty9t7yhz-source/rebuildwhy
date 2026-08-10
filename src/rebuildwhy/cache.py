@@ -11,7 +11,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, cast
 
 from rebuildwhy.canonical import (
     atomic_write_json,
@@ -126,7 +126,8 @@ class CacheStore:
         except IntegrityError as error:
             return CacheInspection(None, _integrity_reason(error.code))
         inspection = self.inspect_action(action_key)
-        if inspection.valid and inspection.record["task_id"] != task_id:
+        record = inspection.record
+        if record is not None and record["task_id"] != task_id:
             return CacheInspection(None, ReasonCode.ACTION_RECORD_CORRUPT)
         return inspection
 
@@ -155,14 +156,15 @@ class CacheStore:
                 manifest_digest=manifest_digest,
             )
         try:
-            manifest = json.loads(data)
+            manifest_value = json.loads(data)
         except (json.JSONDecodeError, UnicodeDecodeError) as error:
             raise IntegrityError(
                 "CACHE_MANIFEST_CORRUPT",
                 "An artifact manifest is not valid canonical JSON.",
                 manifest_digest=manifest_digest,
             ) from error
-        self._validate_manifest(manifest)
+        self._validate_manifest(manifest_value)
+        manifest = cast(dict[str, Any], manifest_value)
         if canonical_json_bytes(manifest) != data:
             raise IntegrityError(
                 "CACHE_MANIFEST_CORRUPT",
@@ -219,7 +221,7 @@ class CacheStore:
         manifest = self.verify_manifest(manifest_digest)
         for entry in manifest["files"]:
             if entry["path"] == relative_path:
-                return entry
+                return cast(dict[str, Any], entry)
         raise IntegrityError(
             "CACHE_MANIFEST_CORRUPT",
             "A required artifact is absent from its manifest.",
@@ -505,6 +507,7 @@ class CacheStore:
             )
             if not valid:
                 raise IntegrityError("CACHE_MANIFEST_CORRUPT", "Invalid artifact entry.")
+            assert isinstance(path, str)
             try:
                 digest_hex(entry["digest"])
             except ValueError as error:

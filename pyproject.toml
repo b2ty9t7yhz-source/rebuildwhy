@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=75"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,19 +8,50 @@ version = "0.1.0"
 description = "Explainable cache invalidation for trusted local task pipelines"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "RebuildWhy Contributors" },
+]
+keywords = [
+  "build-systems",
+  "cache-invalidation",
+  "content-addressed-storage",
+  "developer-tools",
+  "reproducibility",
+  "scientific-computing",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Build Tools",
 ]
 dependencies = [
   "PyYAML>=6.0,<7",
 ]
 
+[project.urls]
+Homepage = "https://github.com/b2ty9t7yhz-source/rebuildwhy"
+Documentation = "https://github.com/b2ty9t7yhz-source/rebuildwhy/tree/main/docs"
+Source = "https://github.com/b2ty9t7yhz-source/rebuildwhy"
+Issues = "https://github.com/b2ty9t7yhz-source/rebuildwhy/issues"
+Changelog = "https://github.com/b2ty9t7yhz-source/rebuildwhy/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
+  "build>=1.5,<2",
+  "mypy>=2.3,<3",
   "pytest>=8.3,<9",
   "pytest-cov>=6,<7",
   "ruff>=0.12,<0.13",
+  "types-PyYAML>=6.0.12,<7",
 ]
 
 [project.scripts]
@@ -28,6 +59,9 @@ rebuildwhy = "rebuildwhy.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+rebuildwhy = ["py.typed"]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers"
@@ -41,6 +75,12 @@ source = ["rebuildwhy"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+
+[tool.mypy]
+files = ["src/rebuildwhy"]
+strict = true
+pretty = true
+show_error_codes = true
 
 [tool.ruff]
 line-length = 100

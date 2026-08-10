@@ -1,5 +1,10 @@
 # RebuildWhy
 
+[![CI](https://github.com/b2ty9t7yhz-source/rebuildwhy/actions/workflows/ci.yml/badge.svg)](https://github.com/b2ty9t7yhz-source/rebuildwhy/actions/workflows/ci.yml)
+[![Python 3.11-3.13](https://img.shields.io/badge/python-3.11--3.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Release](https://img.shields.io/github/v/release/b2ty9t7yhz-source/rebuildwhy?display_name=tag)](https://github.com/b2ty9t7yhz-source/rebuildwhy/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 RebuildWhy is a transparent reference implementation of explainable cache invalidation
 for small, trusted, local task pipelines. It hashes exactly declared inputs, stores verified
 immutable outputs, and explains why each task is a cache hit, restoration, definite run, or
@@ -9,6 +14,17 @@ The narrow idea at the center of the project is uncertainty honesty: if a change
 not run yet, RebuildWhy does not pretend to know whether its output bytes will change. Directly
 changed work is `RUN`; otherwise unchanged consumers are `MAY_RUN` until the real artifact digest
 is available.
+
+## At a glance
+
+- **Precise invalidation:** hash regular files, selected YAML/JSON fields, named environment
+  variables, commands, output contracts, and consumed artifact bytes.
+- **Causal explanations:** trace every decision to stable reason codes and nested upstream causes in
+  human-readable or canonical JSON reports.
+- **Verified reuse:** validate SHA-256 objects, manifests, action records, and publication links
+  before returning `HIT` or `RESTORE`.
+- **Safe local publication:** run trusted commands in isolated staging directories, validate required
+  outputs, and atomically publish immutable artifacts.
 
 ## Quick start
 
@@ -38,6 +54,20 @@ Preview a relevant configuration change without editing the config file or runni
 The result identifies `resample` as `RUN`, while its artifact consumers are `MAY_RUN`. An unrelated
 field can be changed hypothetically without invalidating any task:
 
+```text
+RebuildWhy plan: synthetic-mri-demo (counterfactual)
+ingest HIT
+resample RUN
+  - CONFIG_FIELD_CHANGED: config/pipeline.yaml#/image/spacing
+normalize MAY_RUN
+  - UPSTREAM_ARTIFACT_MAY_CHANGE: resample:image.json
+    - CONFIG_FIELD_CHANGED: config/pipeline.yaml#/image/spacing
+features MAY_RUN
+report MAY_RUN
+```
+
+The complete report continues the causal chain through `features` and `report`.
+
 ```bash
 .venv/bin/rebuildwhy plan \
   -p examples/synthetic_mri/pipeline.yaml \
@@ -54,6 +84,20 @@ Replace one logical source file in the virtual view:
 ```
 
 Neither overlay mutates source files. Values supplied by `--set` must be valid JSON.
+
+The bundled example is an executable acceptance scenario, not a static screenshot:
+
+| Scenario | Verified behavior |
+|---|---|
+| First run | All five tasks execute and publish manifests. |
+| Identical second run | All five tasks are verified `HIT`s. |
+| Relevant spacing overlay | `resample` is `RUN`; downstream consumers are `MAY_RUN`. |
+| Unselected notes overlay | All five tasks remain `HIT`; the affected set is empty. |
+| Missing publication link | Valid cached content is selected as `RESTORE`. |
+| Changed producer action, identical consumed bytes | A downstream `MAY_RUN` refines to `HIT`. |
+
+See the [synthetic MRI walkthrough](examples/synthetic_mri/README.md) for the graph, commands, and
+expected decisions.
 
 ## Decision model
 
@@ -136,19 +180,24 @@ Use an opt-in two-run check for important deterministic tasks:
 - [Counterfactual planning](docs/counterfactual-planning.md)
 - [Security and trust boundary](docs/security-and-trust-boundary.md)
 - [Phase 0 research and scope decision](docs/phase-0-design.md)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
 ## Development
 
 ```bash
 .venv/bin/python -m ruff check src tests examples
 .venv/bin/python -m ruff format --check src tests examples
-.venv/bin/python -m pytest
+.venv/bin/python -m mypy
 .venv/bin/python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80
+.venv/bin/python -m build
 ```
 
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
 cache corruption and absence, restoration, output conflicts, command failure, required outputs,
 failpoint-driven publication boundaries, same-content downstream reuse, and determinism checks.
+GitHub Actions runs linting, formatting, strict typing, branch coverage, and the full test suite on
+Python 3.11, 3.12, and 3.13, then installs the built wheel in a clean packaging job.
 
 RebuildWhy is deliberately a small local reference system, not a replacement for DVC, Snakemake,
 Bazel, Nix, or a production workflow scheduler.
