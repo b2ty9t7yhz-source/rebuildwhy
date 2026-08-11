@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+ERROR_SCHEMA_VERSION = 1
+
 
 @dataclass(slots=True)
 class RebuildWhyError(Exception):
@@ -25,11 +27,12 @@ class RebuildWhyError(Exception):
         """Return the public error envelope used by JSON CLI output."""
 
         return {
+            "schema_version": ERROR_SCHEMA_VERSION,
             "error": {
                 "code": self.code,
                 "message": self.message,
                 "details": self.details,
-            }
+            },
         }
 
 

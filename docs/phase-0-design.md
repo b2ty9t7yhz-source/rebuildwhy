@@ -517,8 +517,10 @@ rebuildwhy/
 │       ├── example_tasks/
 │       └── pipeline.yaml
 ├── schemas/
+│   ├── error-report-v1.schema.json
 │   ├── pipeline-v1.schema.json
-│   └── plan-report-v1.schema.json
+│   ├── plan-report-v1.schema.json
+│   └── run-report-v1.schema.json
 ├── src/
 │   └── rebuildwhy/
 │       ├── __init__.py

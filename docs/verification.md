@@ -14,12 +14,16 @@ python -m ruff format --check src tests examples
 python -m mypy
 python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80
 python -m build
+python -m pip install --force-reinstall dist/*.whl
+python -m pip check
+rebuildwhy --version
 ```
 
 `mypy` uses strict mode across the package, tests, and example tasks. Coverage includes branches
 and must remain at or above 80 percent. Distribution construction produces both an sdist and wheel;
 the source distribution includes the documentation, schemas, examples, and tests, while the wheel
-includes the public schemas and the PEP 561 `py.typed` marker.
+includes the public schemas and the PEP 561 `py.typed` marker. CI reinstalls the built wheel and
+executes the console entry point so source-tree success cannot mask a broken distribution.
 
 ## Claim-to-test traceability
 
@@ -42,8 +46,11 @@ includes the public schemas and the PEP 561 `py.typed` marker.
 | Missing outputs and command failures expose no partial replacement | `test_missing_required_output_preserves_no_partial_publication`, `test_failed_rebuild_keeps_previous_publication` |
 | Injected failures preserve the last publication or a recoverable action | `test_failpoint_before_action_record_keeps_previous_publication`, `test_failpoint_before_publish_leaves_recoverable_action` |
 | Double-run validation accepts deterministic tasks and rejects unstable output | `test_determinism_check_runs_twice_and_accepts_demo_task`, `test_determinism_check_rejects_nondeterministic_task` |
-| Public schemas are valid and real CLI reports conform | `test_schema_is_valid_draft_2020_12`, `test_cli_plan_and_run_reports_match_public_schemas` |
+| Public schemas are valid and real CLI reports conform | `test_schema_is_valid_draft_2020_12`, `test_cli_plan_and_run_reports_match_public_schemas`, `test_cli_error_report_matches_public_schema` |
+| Every non-hit plan decision carries a reason | `test_plan_schema_requires_reasons_for_non_hit_decisions` |
 | CLI success and failure payloads are structured JSON | `test_plan_json_is_machine_readable`, `test_structured_json_error` |
+| Human CLI output remains readable | `test_human_plan_and_run_are_readable`, `test_human_error_is_readable` |
+| Package version and console entry-point metadata stay consistent | `test_runtime_version_matches_distribution_metadata`, `test_console_entry_point_is_published` |
 
 ## Manual fresh-install smoke test
 

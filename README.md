@@ -127,6 +127,7 @@ The public contracts are versioned as JSON Schema:
 - [pipeline V1](schemas/pipeline-v1.schema.json)
 - [plan report V1](schemas/plan-report-v1.schema.json)
 - [run report V1](schemas/run-report-v1.schema.json)
+- [error report V1](schemas/error-report-v1.schema.json)
 
 ## Correctness boundary
 
@@ -170,8 +171,9 @@ Use an opt-in two-run check for important deterministic tasks:
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
 cache corruption and absence, restoration, output conflicts, command failure, required outputs,
 failpoint-driven publication boundaries, same-content downstream reuse, and determinism checks.
-The schema contract suite also validates real CLI plan/run reports against the published Draft
-2020-12 schemas. See the [acceptance matrix](docs/verification.md) for claim-to-test traceability.
+The schema contract suite also validates real CLI plan, run, and error reports against the
+published Draft 2020-12 schemas. See the [acceptance matrix](docs/verification.md) for
+claim-to-test traceability.
 
 RebuildWhy is deliberately a small local reference system, not a replacement for DVC, Snakemake,
 Bazel, Nix, or a production workflow scheduler.

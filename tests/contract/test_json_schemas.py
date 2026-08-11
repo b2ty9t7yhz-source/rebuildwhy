@@ -35,6 +35,7 @@ def copy_demo(tmp_path: Path) -> Path:
 @pytest.mark.parametrize(
     "schema_name",
     [
+        "error-report-v1.schema.json",
         "pipeline-v1.schema.json",
         "plan-report-v1.schema.json",
         "run-report-v1.schema.json",
@@ -66,6 +67,17 @@ def test_cli_plan_and_run_reports_match_public_schemas(
     Draft202012Validator(load_schema("run-report-v1.schema.json")).validate(run_report)
 
 
+def test_cli_error_report_matches_public_schema(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    missing = tmp_path / "missing.yaml"
+
+    assert main(["plan", "-p", str(missing), "--json"]) == 2
+    error_report = json.loads(capsys.readouterr().err)
+
+    Draft202012Validator(load_schema("error-report-v1.schema.json")).validate(error_report)
+
+
 def test_pipeline_schema_rejects_reserved_paths_and_bad_pointer_escapes() -> None:
     document = cast(
         dict[str, Any],
@@ -94,6 +106,21 @@ def test_plan_schema_rejects_malformed_digest() -> None:
         "mode": "current",
         "affected_task_ids": [],
         "tasks": [{"task_id": "task", "decision": "HIT", "reason_ids": []}],
+        "reasons": [],
+    }
+
+    with pytest.raises(ValidationError):
+        Draft202012Validator(load_schema("plan-report-v1.schema.json")).validate(report)
+
+
+def test_plan_schema_requires_reasons_for_non_hit_decisions() -> None:
+    report = {
+        "schema_version": 1,
+        "plan_id": "sha256:" + "0" * 64,
+        "pipeline": "example",
+        "mode": "current",
+        "affected_task_ids": ["task"],
+        "tasks": [{"task_id": "task", "decision": "RUN", "reason_ids": []}],
         "reasons": [],
     }
 
