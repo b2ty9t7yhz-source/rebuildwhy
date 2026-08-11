@@ -7,15 +7,16 @@
   "required": ["schema_version", "pipeline", "events"],
   "properties": {
     "schema_version": {"const": 1},
-    "pipeline": {"type": "string"},
+    "pipeline": {"type": "string", "minLength": 1},
     "events": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["task_id", "decision", "action_key", "manifest_digest"],
         "properties": {
-          "task_id": {"type": "string"},
+          "task_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
           "decision": {"enum": ["HIT", "RESTORE", "RUN"]},
           "action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
           "manifest_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}

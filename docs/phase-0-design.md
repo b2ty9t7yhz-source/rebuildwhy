@@ -3,7 +3,7 @@
 **Project:** RebuildWhy: Explainable Cache Invalidation for Local Task Pipelines
 **Status:** Historical Phase 0 research; the approved V1 implementation now exists
 **Research date:** 2026-08-10
-**Proposed V1 platform:** Python 3.12+, local POSIX filesystem, trusted local commands
+**Implemented V1 platform:** Python 3.11+, local POSIX filesystem, trusted local commands
 
 ## 1. Executive Decision
 

@@ -1,5 +1,7 @@
 # RebuildWhy
 
+[![CI](https://github.com/b2ty9t7yhz-source/rebuildwhy/actions/workflows/ci.yml/badge.svg)](https://github.com/b2ty9t7yhz-source/rebuildwhy/actions/workflows/ci.yml)
+
 RebuildWhy is a transparent reference implementation of explainable cache invalidation
 for small, trusted, local task pipelines. It hashes exactly declared inputs, stores verified
 immutable outputs, and explains why each task is a cache hit, restoration, definite run, or
@@ -9,6 +11,17 @@ The narrow idea at the center of the project is uncertainty honesty: if a change
 not run yet, RebuildWhy does not pretend to know whether its output bytes will change. Directly
 changed work is `RUN`; otherwise unchanged consumers are `MAY_RUN` until the real artifact digest
 is available.
+
+## Engineering highlights
+
+- deterministic DAG validation and topological execution from a strict YAML specification;
+- field-level YAML/JSON config dependencies using RFC 6901 JSON Pointers;
+- canonical action snapshots, SHA-256 content-addressed storage, and verified cache restoration;
+- causal current/counterfactual plans with stable reason IDs and machine-readable JSON;
+- failpoint-tested atomic publication that preserves the last complete output on failure;
+- opt-in double execution that rejects nondeterministic artifact manifests; and
+- Python 3.11–3.13 CI with linting, formatting, strict typing, branch coverage, schema contracts,
+  and wheel/sdist builds.
 
 ## Quick start
 
@@ -109,6 +122,12 @@ in `REBUILDWHY_CONTEXT`. That JSON document contains the isolated staging output
 resolved file, config, and artifact inputs. See the complete
 [`synthetic_mri` example](examples/synthetic_mri/pipeline.yaml).
 
+The public contracts are versioned as JSON Schema:
+
+- [pipeline V1](schemas/pipeline-v1.schema.json)
+- [plan report V1](schemas/plan-report-v1.schema.json)
+- [run report V1](schemas/run-report-v1.schema.json)
+
 ## Correctness boundary
 
 Cache reuse is safe under a conditional contract:
@@ -135,6 +154,7 @@ Use an opt-in two-run check for important deterministic tasks:
 - [Cache correctness](docs/cache-correctness.md)
 - [Counterfactual planning](docs/counterfactual-planning.md)
 - [Security and trust boundary](docs/security-and-trust-boundary.md)
+- [Verification and acceptance matrix](docs/verification.md)
 - [Phase 0 research and scope decision](docs/phase-0-design.md)
 
 ## Development
@@ -142,13 +162,16 @@ Use an opt-in two-run check for important deterministic tasks:
 ```bash
 .venv/bin/python -m ruff check src tests examples
 .venv/bin/python -m ruff format --check src tests examples
-.venv/bin/python -m pytest
+.venv/bin/python -m mypy
 .venv/bin/python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80
+.venv/bin/python -m build
 ```
 
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
 cache corruption and absence, restoration, output conflicts, command failure, required outputs,
 failpoint-driven publication boundaries, same-content downstream reuse, and determinism checks.
+The schema contract suite also validates real CLI plan/run reports against the published Draft
+2020-12 schemas. See the [acceptance matrix](docs/verification.md) for claim-to-test traceability.
 
 RebuildWhy is deliberately a small local reference system, not a replacement for DVC, Snakemake,
 Bazel, Nix, or a production workflow scheduler.

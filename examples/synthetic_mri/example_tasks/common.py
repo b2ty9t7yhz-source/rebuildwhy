@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 def context() -> dict[str, Any]:
     """Read the execution context supplied by RebuildWhy."""
 
-    return json.loads(Path(os.environ["REBUILDWHY_CONTEXT"]).read_text(encoding="utf-8"))
+    value = json.loads(Path(os.environ["REBUILDWHY_CONTEXT"]).read_text(encoding="utf-8"))
+    return cast(dict[str, Any], value)
 
 
 def read_json(path: str) -> Any:

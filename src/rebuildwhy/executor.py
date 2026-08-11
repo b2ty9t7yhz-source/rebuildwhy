@@ -98,12 +98,14 @@ class Executor:
                     task_id=plan.task_id,
                     action_key=plan.proposed_action_key,
                 )
-            self.cache.restore(task, inspection.record)
+            record = inspection.record
+            assert record is not None
+            self.cache.restore(task, record)
             return RunEvent(
                 task_id=plan.task_id,
                 decision=Decision.RESTORE,
                 action_key=plan.proposed_action_key,
-                manifest_digest=inspection.record["manifest_digest"],
+                manifest_digest=record["manifest_digest"],
             )
         if plan.decision is not Decision.RUN:
             raise ExecutionError(
@@ -141,12 +143,13 @@ class Executor:
                     )
 
             existing = self.cache.inspect_action(plan.proposed_action_key)
-            if existing.valid and existing.record["manifest_digest"] != first_digest:
+            existing_record = existing.record
+            if existing_record is not None and existing_record["manifest_digest"] != first_digest:
                 raise ExecutionError(
                     "NONDETERMINISTIC_OUTPUT",
                     "This action key previously produced a different artifact manifest.",
                     task_id=task.task_id,
-                    previous_manifest_digest=existing.record["manifest_digest"],
+                    previous_manifest_digest=existing_record["manifest_digest"],
                     new_manifest_digest=first_digest,
                 )
 
@@ -228,6 +231,7 @@ class Executor:
 
     def _execution_context(self, plan: TaskPlan, output: Path) -> dict[str, Any]:
         task = self.pipeline.tasks[plan.task_id]
+        assert plan.snapshot is not None
         view = WorkspaceView(self.pipeline)
         files = {logical: str(view.source_path(logical).resolve()) for logical in task.files}
         configs = {
@@ -244,8 +248,10 @@ class Executor:
                     producer=dependency.task,
                     path=dependency.path,
                 )
+            producer_record = producer.record
+            assert producer_record is not None
             artifacts[f"{dependency.task}:{dependency.path}"] = str(
-                self.cache.artifact_path(producer.record["manifest_digest"]) / dependency.path
+                self.cache.artifact_path(producer_record["manifest_digest"]) / dependency.path
             )
         return {
             "schema_version": 1,

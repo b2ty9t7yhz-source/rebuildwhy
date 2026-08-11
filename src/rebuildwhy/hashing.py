@@ -36,13 +36,13 @@ def build_snapshot(
         file_inputs.append({"path": logical_path, "digest": digest, "size": size})
 
     config_inputs: list[dict[str, Any]] = []
-    for dependency in task.configs:
-        document = view.config_document(dependency.file)
-        for pointer in dependency.pointers:
+    for config_dependency in task.configs:
+        document = view.config_document(config_dependency.file)
+        for pointer in config_dependency.pointers:
             value = resolve_json_pointer(document, pointer)
             config_inputs.append(
                 {
-                    "file": dependency.file,
+                    "file": config_dependency.file,
                     "pointer": pointer,
                     "digest": sha256_value(value),
                     "value": value,
@@ -57,21 +57,21 @@ def build_snapshot(
         environment_inputs.append({"name": name, "digest": sha256_value(marker)})
 
     artifact_inputs: list[dict[str, Any]] = []
-    for dependency in task.artifacts:
-        key = (dependency.task, dependency.path)
+    for artifact_dependency in task.artifacts:
+        key = (artifact_dependency.task, artifact_dependency.path)
         if key not in upstream:
             raise SpecError(
                 "UPSTREAM_ARTIFACT_UNAVAILABLE",
                 "An upstream artifact digest is not available for a concrete snapshot.",
                 task_id=task.task_id,
-                producer=dependency.task,
-                path=dependency.path,
+                producer=artifact_dependency.task,
+                path=artifact_dependency.path,
             )
         record = upstream[key]
         artifact_inputs.append(
             {
-                "task": dependency.task,
-                "path": dependency.path,
+                "task": artifact_dependency.task,
+                "path": artifact_dependency.path,
                 "digest": record["digest"],
                 "size": record["size"],
             }

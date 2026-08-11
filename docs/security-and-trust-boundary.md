@@ -47,5 +47,9 @@ Reusable bytes are verified by SHA-256 and sizes before use. This detects accide
 ordinary tampering; it is not an authenticity or authorization system. Anyone able to modify the
 pipeline, source inputs, cache, or task commands is inside the V1 trust boundary.
 
+Cache action records, manifests, state records, and file objects must be regular files. Symbolic
+links and special files are rejected without following them, including when their targets contain
+otherwise valid bytes.
+
 V1 has no multi-process lock. Do not run two writers against the same project cache concurrently.
 The supported deployment is one user, one process, one local POSIX filesystem.

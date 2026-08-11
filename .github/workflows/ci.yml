@@ -26,5 +26,9 @@ jobs:
         run: python -m ruff check src tests examples
       - name: Format
         run: python -m ruff format --check src tests examples
+      - name: Type check
+        run: python -m mypy
       - name: Test
         run: python -m pytest --cov=rebuildwhy --cov-branch --cov-report=term-missing --cov-fail-under=80
+      - name: Build distribution
+        run: python -m build

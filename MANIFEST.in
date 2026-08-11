@@ -1,0 +1,4 @@
+recursive-include docs *.md
+recursive-include examples *.json *.py *.txt *.yaml
+recursive-include schemas *.json
+recursive-include tests *.py
