@@ -12,8 +12,9 @@ flowchart LR
 ```
 
 Each task declares only the source files, configuration fields, environment markers, and upstream
-artifact files that can affect its output. `requirements.lock` is deliberately included as a regular
-input so dependency changes participate in action keys.
+artifact files that can affect its output. `runtime-contract.txt` is deliberately included as a
+regular input so runtime-contract changes participate in action keys without pretending to be an
+installer lock file.
 
 ## Run the example
 

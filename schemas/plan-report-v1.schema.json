@@ -16,31 +16,29 @@
   "properties": {
     "schema_version": {"const": 1},
     "plan_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-    "pipeline": {"type": "string", "minLength": 1},
+    "pipeline": {"type": "string", "minLength": 1, "pattern": "\\S"},
     "mode": {"enum": ["current", "counterfactual"]},
     "affected_task_ids": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"}
+      "items": {"$ref": "#/$defs/taskId"}
     },
     "tasks": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "required": ["task_id", "decision", "reason_ids"],
         "properties": {
-          "task_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+          "task_id": {"$ref": "#/$defs/taskId"},
           "decision": {"enum": ["HIT", "RESTORE", "RUN", "MAY_RUN", "BLOCKED"]},
-          "baseline_action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-          "proposed_action_key": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-          "proposed_manifest_digest": {
-            "type": "string",
-            "pattern": "^sha256:[0-9a-f]{64}$"
-          },
+          "baseline_action_key": {"$ref": "#/$defs/digest"},
+          "proposed_action_key": {"$ref": "#/$defs/digest"},
+          "proposed_manifest_digest": {"$ref": "#/$defs/digest"},
           "reason_ids": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"type": "string", "pattern": "^reason-[0-9]{4}$"}
+            "items": {"$ref": "#/$defs/reasonId"}
           }
         },
         "additionalProperties": false,
@@ -50,16 +48,8 @@
               "properties": {"decision": {"const": "HIT"}},
               "required": ["decision"]
             },
-            "then": {"properties": {"reason_ids": {"maxItems": 0}}}
-          },
-          {
-            "if": {
-              "properties": {
-                "decision": {"enum": ["RESTORE", "RUN", "MAY_RUN", "BLOCKED"]}
-              },
-              "required": ["decision"]
-            },
-            "then": {"properties": {"reason_ids": {"minItems": 1}}}
+            "then": {"properties": {"reason_ids": {"maxItems": 0}}},
+            "else": {"properties": {"reason_ids": {"minItems": 1}}}
           }
         ]
       }
@@ -70,8 +60,8 @@
         "type": "object",
         "required": ["reason_id", "task_id", "code", "subject", "caused_by"],
         "properties": {
-          "reason_id": {"type": "string", "pattern": "^reason-[0-9]{4}$"},
-          "task_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+          "reason_id": {"$ref": "#/$defs/reasonId"},
+          "task_id": {"$ref": "#/$defs/taskId"},
           "code": {
             "enum": [
               "NEW_TASK",
@@ -97,18 +87,23 @@
             ]
           },
           "subject": {"type": "string", "minLength": 1},
-          "old_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-          "new_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "old_digest": {"$ref": "#/$defs/digest"},
+          "new_digest": {"$ref": "#/$defs/digest"},
           "old_value": {},
           "new_value": {},
           "caused_by": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"type": "string", "pattern": "^reason-[0-9]{4}$"}
+            "items": {"$ref": "#/$defs/reasonId"}
           }
         },
         "additionalProperties": false
       }
     }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "reasonId": {"type": "string", "pattern": "^reason-[0-9]{4,}$"},
+    "taskId": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"}
   }
 }

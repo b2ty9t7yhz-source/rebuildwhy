@@ -25,6 +25,10 @@ is available.
   before returning `HIT` or `RESTORE`.
 - **Safe local publication:** run trusted commands in isolated staging directories, validate required
   outputs, and atomically publish immutable artifacts.
+- **Honest uncertainty:** use `MAY_RUN` for consumers whose future upstream bytes are not yet known,
+  and refine those decisions after the producer completes.
+- **Auditable quality:** enforce strict typing, branch coverage, versioned JSON contracts,
+  determinism checks, and installed-wheel smoke tests on Python 3.11–3.13.
 
 ## Quick start
 
@@ -153,6 +157,13 @@ in `REBUILDWHY_CONTEXT`. That JSON document contains the isolated staging output
 resolved file, config, and artifact inputs. See the complete
 [`synthetic_mri` example](examples/synthetic_mri/pipeline.yaml).
 
+The public contracts are versioned as JSON Schema:
+
+- [pipeline V1](schemas/pipeline-v1.schema.json)
+- [plan report V1](schemas/plan-report-v1.schema.json)
+- [run report V1](schemas/run-report-v1.schema.json)
+- [error report V1](schemas/error-report-v1.schema.json)
+
 ## Correctness boundary
 
 Cache reuse is safe under a conditional contract:
@@ -180,6 +191,7 @@ Use an opt-in two-run check for important deterministic tasks:
 - [Counterfactual planning](docs/counterfactual-planning.md)
 - [Security and trust boundary](docs/security-and-trust-boundary.md)
 - [Versioned JSON schemas](schemas/README.md)
+- [Verification and acceptance matrix](docs/verification.md)
 - [Phase 0 research and scope decision](docs/phase-0-design.md)
 - [Contributing](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
@@ -197,9 +209,10 @@ Use an opt-in two-run check for important deterministic tasks:
 Tests cover parser/graph validation, canonical hashing, counterfactual relevance, causal uncertainty,
 cache corruption and absence, restoration, output conflicts, command failure, required outputs,
 failpoint-driven publication boundaries, same-content downstream reuse, determinism checks, and
-Draft 2020-12 schema validation against real pipeline and CLI report instances.
-GitHub Actions runs linting, formatting, strict typing, branch coverage, and the full test suite on
-Python 3.11, 3.12, and 3.13, then installs the built wheel in a clean packaging job.
+Draft 2020-12 schema validation against real pipeline, plan, run, and error instances. See the
+[acceptance matrix](docs/verification.md) for claim-to-test traceability. GitHub Actions runs
+linting, formatting, strict typing, branch coverage, and the full test suite on Python 3.11, 3.12,
+and 3.13, then installs and exercises the built wheel in a clean packaging job.
 
 RebuildWhy is deliberately a small local reference system, not a replacement for DVC, Snakemake,
 Bazel, Nix, or a production workflow scheduler.

@@ -254,6 +254,8 @@ class Executor:
                     producer=dependency.task,
                     path=dependency.path,
                 )
+            producer_record = producer.record
+            assert producer_record is not None
             artifacts[f"{dependency.task}:{dependency.path}"] = str(
                 self.cache.artifact_path(producer_record["manifest_digest"]) / dependency.path
             )

@@ -11,7 +11,7 @@ tasks:
         - data/synthetic_image.json
         - example_tasks/common.py
         - example_tasks/ingest.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:
@@ -30,7 +30,7 @@ tasks:
       files:
         - example_tasks/common.py
         - example_tasks/resample.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:
@@ -53,7 +53,7 @@ tasks:
       files:
         - example_tasks/common.py
         - example_tasks/normalize.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:
@@ -74,7 +74,7 @@ tasks:
       files:
         - example_tasks/common.py
         - example_tasks/features.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:
@@ -95,7 +95,7 @@ tasks:
       files:
         - example_tasks/common.py
         - example_tasks/report.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:

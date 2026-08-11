@@ -158,6 +158,7 @@ def test_corrupt_object_is_not_reused(demo: Path) -> None:
     Executor(pipeline).run()
     cache = CacheStore(pipeline.root)
     baseline = cache.load_baseline("ingest")
+    assert baseline.record is not None
     manifest = cache.verify_manifest(baseline.record["manifest_digest"])
     object_path = cache.object_path(manifest["files"][0]["digest"])
     object_path.chmod(0o644)
@@ -175,6 +176,7 @@ def test_missing_object_is_not_reused(demo: Path) -> None:
     Executor(pipeline).run()
     cache = CacheStore(pipeline.root)
     baseline = cache.load_baseline("ingest")
+    assert baseline.record is not None
     manifest = cache.verify_manifest(baseline.record["manifest_digest"])
     object_path = cache.object_path(manifest["files"][0]["digest"])
     moved = cache.quarantine / "deliberately-missing-object"
@@ -186,13 +188,47 @@ def test_missing_object_is_not_reused(demo: Path) -> None:
     assert any(reason["code"] == "CACHE_OBJECT_MISSING" for reason in report["reasons"])
 
 
+def test_symlinked_cache_object_is_not_reused(demo: Path, tmp_path: Path) -> None:
+    pipeline = load_pipeline(demo)
+    Executor(pipeline).run()
+    cache = CacheStore(pipeline.root)
+    baseline = cache.load_baseline("ingest")
+    assert baseline.record is not None
+    manifest = cache.verify_manifest(baseline.record["manifest_digest"])
+    object_path = cache.object_path(manifest["files"][0]["digest"])
+    external_copy = tmp_path / "external-object"
+    object_path.rename(external_copy)
+    object_path.symlink_to(external_copy)
+
+    report = Planner(pipeline, cache).plan().report.to_dict()
+
+    assert any(reason["code"] == "CACHE_OBJECT_CORRUPT" for reason in report["reasons"])
+
+
 def test_incomplete_action_record_is_not_reused(demo: Path) -> None:
     pipeline = load_pipeline(demo)
     Executor(pipeline).run()
     cache = CacheStore(pipeline.root)
     baseline = cache.load_baseline("report")
+    assert baseline.record is not None
     action_path = cache.action_path(baseline.record["action_key"])
     action_path.write_text('{"complete":false}', encoding="utf-8")
+
+    report = Planner(pipeline, cache).plan().report.to_dict()
+
+    assert any(reason["code"] == "ACTION_RECORD_CORRUPT" for reason in report["reasons"])
+
+
+def test_symlinked_action_record_is_not_reused(demo: Path, tmp_path: Path) -> None:
+    pipeline = load_pipeline(demo)
+    Executor(pipeline).run()
+    cache = CacheStore(pipeline.root)
+    baseline = cache.load_baseline("report")
+    assert baseline.record is not None
+    action_path = cache.action_path(baseline.record["action_key"])
+    external_copy = tmp_path / "external-action.json"
+    action_path.rename(external_copy)
+    action_path.symlink_to(external_copy)
 
     report = Planner(pipeline, cache).plan().report.to_dict()
 
@@ -204,6 +240,7 @@ def test_action_snapshot_must_match_its_key(demo: Path) -> None:
     Executor(pipeline).run()
     cache = CacheStore(pipeline.root)
     baseline = cache.load_baseline("report")
+    assert baseline.record is not None
     action_path = cache.action_path(baseline.record["action_key"])
     tampered = baseline.record
     tampered["snapshot"]["command"]["argv"].append("tampered")
@@ -299,6 +336,7 @@ def test_failpoint_before_action_record_keeps_previous_publication(demo: Path) -
         encoding="utf-8",
     )
     proposed = Planner(pipeline).plan().by_task["report"].proposed_action_key
+    assert proposed is not None
 
     def failpoint(name: str) -> None:
         if name == "before_action_record":

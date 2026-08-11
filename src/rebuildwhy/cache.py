@@ -84,8 +84,10 @@ class CacheStore:
         """Return a verified action record or a stable cache failure reason."""
 
         path = self.action_path(action_key)
-        if not path.is_file():
+        if not path.exists() and not path.is_symlink():
             return CacheInspection(None, ReasonCode.ACTION_RECORD_MISSING)
+        if not _is_regular_file(path):
+            return CacheInspection(None, ReasonCode.ACTION_RECORD_CORRUPT)
         try:
             record = self._read_json(path, "ACTION_RECORD_CORRUPT")
             self._validate_action(record, action_key)
@@ -98,8 +100,10 @@ class CacheStore:
         """Load the last successfully published action for a task."""
 
         path = self.state / f"{task_id}.json"
-        if not path.is_file():
+        if not path.exists() and not path.is_symlink():
             return CacheInspection(None, ReasonCode.ACTION_RECORD_MISSING)
+        if not _is_regular_file(path):
+            return CacheInspection(None, ReasonCode.ACTION_RECORD_CORRUPT)
         try:
             state = self._read_json(path, "ACTION_RECORD_CORRUPT")
             if not isinstance(state, dict) or state.get("task_id") != task_id:
@@ -135,10 +139,16 @@ class CacheStore:
         """Verify a manifest and every immutable file object it references."""
 
         path = self.manifest_path(manifest_digest)
-        if not path.is_file():
+        if not path.exists() and not path.is_symlink():
             raise IntegrityError(
                 "CACHE_MANIFEST_MISSING",
                 "A referenced artifact manifest is missing.",
+                manifest_digest=manifest_digest,
+            )
+        if not _is_regular_file(path):
+            raise IntegrityError(
+                "CACHE_MANIFEST_CORRUPT",
+                "An artifact manifest must be a regular file.",
                 manifest_digest=manifest_digest,
             )
         try:
@@ -173,10 +183,17 @@ class CacheStore:
             )
         for entry in manifest["files"]:
             object_path = self.object_path(entry["digest"])
-            if not object_path.is_file():
+            if not object_path.exists() and not object_path.is_symlink():
                 raise IntegrityError(
                     "CACHE_OBJECT_MISSING",
                     "A file object referenced by a manifest is missing.",
+                    digest=entry["digest"],
+                    path=entry["path"],
+                )
+            if not _is_regular_file(object_path):
+                raise IntegrityError(
+                    "CACHE_OBJECT_CORRUPT",
+                    "A cached file object must be a regular file.",
                     digest=entry["digest"],
                     path=entry["path"],
                 )
@@ -339,10 +356,11 @@ class CacheStore:
 
     def _store_object(self, source: Path, entry: dict[str, Any]) -> None:
         destination = self.object_path(entry["digest"])
-        if destination.exists():
-            actual_digest, actual_size = sha256_file(destination)
-            if actual_digest == entry["digest"] and actual_size == entry["size"]:
-                return
+        if destination.exists() or destination.is_symlink():
+            if _is_regular_file(destination):
+                actual_digest, actual_size = sha256_file(destination)
+                if actual_digest == entry["digest"] and actual_size == entry["size"]:
+                    return
             self._quarantine(destination)
         descriptor, temporary_name = tempfile.mkstemp(prefix="object-", dir=self.temporary)
         temporary_path = Path(temporary_name)
@@ -365,8 +383,8 @@ class CacheStore:
 
     def _store_immutable(self, destination: Path, data: bytes) -> None:
         destination.parent.mkdir(parents=True, exist_ok=True)
-        if destination.exists():
-            if destination.read_bytes() == data:
+        if destination.exists() or destination.is_symlink():
+            if _is_regular_file(destination) and destination.read_bytes() == data:
                 return
             self._quarantine(destination)
         descriptor, temporary_name = tempfile.mkstemp(
@@ -534,3 +552,12 @@ def _integrity_reason(code: str) -> ReasonCode:
         "CACHE_OBJECT_CORRUPT": ReasonCode.CACHE_OBJECT_CORRUPT,
     }
     return mapping.get(code, ReasonCode.ACTION_RECORD_CORRUPT)
+
+
+def _is_regular_file(path: Path) -> bool:
+    """Check a cache path without following symbolic links."""
+
+    try:
+        return stat.S_ISREG(path.lstat().st_mode)
+    except OSError:
+        return False

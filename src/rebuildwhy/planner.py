@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -187,13 +188,15 @@ class Planner:
         candidate: CacheInspection | None = None,
     ) -> ReasonDraft:
         code: ReasonCode
-        if candidate is not None and candidate.reason not in {
-            None,
-            ReasonCode.ACTION_RECORD_MISSING,
-        }:
-            code = candidate.reason
-        elif (self.cache.state / f"{task_id}.json").exists() and baseline.reason is not None:
-            code = baseline.reason
+        baseline_reason = baseline.reason
+        candidate_reason = candidate.reason if candidate is not None else None
+        if (
+            candidate_reason is not None
+            and candidate_reason is not ReasonCode.ACTION_RECORD_MISSING
+        ):
+            code = candidate_reason
+        elif (self.cache.state / f"{task_id}.json").exists() and baseline_reason is not None:
+            code = baseline_reason
         else:
             code = ReasonCode.NEW_TASK
         return ReasonDraft(task_id=task_id, code=code, subject=subject)
@@ -262,7 +265,7 @@ def _component_reasons(
     code: ReasonCode,
     old_items: list[dict[str, Any]],
     new_items: list[dict[str, Any]],
-    locator: Any,
+    locator: Callable[[dict[str, Any]], str],
 ) -> list[ReasonDraft]:
     old_index = {locator(item): item for item in old_items}
     new_index = {locator(item): item for item in new_items}

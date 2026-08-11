@@ -3,7 +3,7 @@
 **Project:** RebuildWhy: Explainable Cache Invalidation for Local Task Pipelines
 **Status:** Historical Phase 0 research; the approved V1 implementation now exists
 **Research date:** 2026-08-10
-**Proposed V1 platform:** Python 3.12+, local POSIX filesystem, trusted local commands
+**Implemented V1 platform:** Python 3.11+, local POSIX filesystem, trusted local commands
 
 ## 1. Executive Decision
 
@@ -255,7 +255,7 @@ tasks:
       files:
         - data/synthetic_image.bin
         - example_tasks/resample.py
-        - requirements.lock
+        - runtime-contract.txt
       config:
         - file: config/pipeline.yaml
           pointers:
@@ -277,7 +277,7 @@ tasks:
     inputs:
       files:
         - example_tasks/normalize.py
-        - requirements.lock
+        - runtime-contract.txt
       artifacts:
         - task: resample
           path: image.bin
@@ -517,8 +517,10 @@ rebuildwhy/
 │       ├── example_tasks/
 │       └── pipeline.yaml
 ├── schemas/
+│   ├── error-report-v1.schema.json
 │   ├── pipeline-v1.schema.json
-│   └── plan-report-v1.schema.json
+│   ├── plan-report-v1.schema.json
+│   └── run-report-v1.schema.json
 ├── src/
 │   └── rebuildwhy/
 │       ├── __init__.py

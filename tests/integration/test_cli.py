@@ -104,7 +104,27 @@ def test_structured_json_error(tmp_path: Path, capsys: pytest.CaptureFixture[str
     body = json.loads(captured.err)
 
     assert exit_code == 2
+    assert body["schema_version"] == 1
     assert body["error"]["code"] == "PIPELINE_NOT_FOUND"
+
+
+def test_human_plan_and_run_are_readable(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = copy_demo(tmp_path)
+
+    assert main(["plan", "-p", str(pipeline)]) == 0
+    plan_output = capsys.readouterr().out
+
+    assert "RebuildWhy plan: synthetic-mri-demo (current)" in plan_output
+    assert "ingest RUN" in plan_output
+    assert "NEW_TASK: ingest" in plan_output
+
+    assert main(["run", "-p", str(pipeline)]) == 0
+    run_output = capsys.readouterr().out
+
+    assert "RebuildWhy run: synthetic-mri-demo" in run_output
+    assert "report RUN sha256:" in run_output
 
 
 def test_human_error_is_concise(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

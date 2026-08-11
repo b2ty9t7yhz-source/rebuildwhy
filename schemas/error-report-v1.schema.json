@@ -4,8 +4,9 @@
   "title": "RebuildWhy Error Report V1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["error"],
+  "required": ["schema_version", "error"],
   "properties": {
+    "schema_version": {"const": 1},
     "error": {
       "type": "object",
       "additionalProperties": false,
