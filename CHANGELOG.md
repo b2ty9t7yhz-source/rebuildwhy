@@ -3,6 +3,26 @@
 All notable changes to RebuildWhy are documented in this file. The project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-08-13
+
+### Added
+
+- Contract tests for package metadata, installed schemas, and real CLI plan, run, and error
+  reports.
+- A verification matrix connecting public correctness and security claims to automated tests.
+- Installed-wheel smoke coverage for the executable synthetic MRI plan.
+
+### Changed
+
+- Hardened cache lookup against symlinked records and manifests escaping the managed cache root.
+- Tightened structured report schemas and kept schema-version requirements consistent across
+  successful and error responses.
+- Extended strict typing and test discovery across source, tests, and examples.
+- Replaced the example's placeholder dependency lock with an explicit runtime-contract input.
+- Strengthened source and wheel distribution checks for documentation, schemas, entry points, and
+  PEP 561 metadata.
+- Excluded generated example cache and publication directories from source distributions.
+
 ## [0.1.1] - 2026-08-10
 
 ### Added
@@ -37,5 +57,6 @@ All notable changes to RebuildWhy are documented in this file. The project follo
 - Strict static typing, PEP 561 metadata, branch-coverage enforcement, Python 3.11-3.13 CI, and clean
   wheel-install smoke tests.
 
+[0.1.2]: https://github.com/b2ty9t7yhz-source/rebuildwhy/releases/tag/v0.1.2
 [0.1.1]: https://github.com/b2ty9t7yhz-source/rebuildwhy/releases/tag/v0.1.1
 [0.1.0]: https://github.com/b2ty9t7yhz-source/rebuildwhy/releases/tag/v0.1.0
