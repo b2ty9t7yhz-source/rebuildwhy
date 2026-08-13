@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rebuildwhy"
-version = "0.1.1"
+version = "0.1.2"
 description = "Explainable cache invalidation for trusted local task pipelines"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -74,7 +74,15 @@ jobs:
           missing = sorted(
               path for path in required if not any(name.endswith(f"/{path}") for name in names)
           )
+          forbidden = (
+              "/examples/synthetic_mri/.rebuildwhy/",
+              "/examples/synthetic_mri/outputs/",
+          )
+          contaminated = sorted(
+              name for name in names if any(marker in f"/{name}/" for marker in forbidden)
+          )
           assert not missing, f"source distribution is missing: {missing}"
+          assert not contaminated, f"source distribution contains runtime artifacts: {contaminated}"
           PY
       - name: Install wheel
         run: python -m pip install dist/*.whl
